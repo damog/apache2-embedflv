@@ -1,0 +1,68 @@
+NAME
+    Apache2::EmbedFLV - Embed FLV videos into a templated web interface
+    using Flowplayer
+
+SYNOPSIS
+    On your Apache configuration file:
+
+     <Files ~ "\.flv$">
+       SetHandler modperl
+             PerlResponseHandler Apache2::EmbedFLV
+     </Files>
+
+    This is needed in order to have Flowplayer work out of the box:
+
+     <Location /flowplayer.swf>
+       SetHandler modperl
+             PerlResponseHandler Apache2::EmbedFLV::FlowPlayer
+     </Location>
+     <Location /flowplayer.controls.swf>
+       SetHandler modperl
+             PerlResponseHandler Apache2::EmbedFLV::FlowPlayer::Controls
+     </Location>
+
+    That's it. Just go to any FLV video within your web server.
+
+DESCRIPTION
+    "Apache2::EmbedFLV" enables Apache to show FLV videos using Flowplayer
+    and a (yet-to-be) customizable template. This will ease any deployment
+    of FLV video galleries you'd need to do since you could just put the
+    FLVs on an Apache accessible location, and they will be presented on a
+    proper way to your final user.
+
+SEE IT IN ACTION
+    You can see it in action here:
+    <http://dev.axiombox.com/apache2-flowplayer>.
+
+BEHIND THE SCENES
+    "Apache2::EmbedFLV" is a hack. The most prominent hack within the
+    distribution is the embedded Flowplayer. You don't need to separately
+    download and install it as it is already served using
+    "Apache2::EmbedFLV::FlowPlayer", with an up-to-date base64 encoded
+    string. This is possible due to: a) ease installation and deployment
+    using standard CPAN installation methods, and b) Flowplayer being a nice
+    GPL product.
+
+CUSTOMIZATION
+    As of 0.1 release, customization of the template is not possible, but it
+    shouldn't take that long before this is possible. If you are brave
+    though, you can edit lib/Apache/EmbedFLV/Template.pm directly.
+
+PARTICIPATE
+    Code is hosted at <http://github.com/damog/apache2-embedflv>.
+
+AUTHOR
+    David Moreno <david@axiombox.com>.
+
+THANKS
+    Nabbr.com, <http://nabbr.com/>, and Flowplayer <http://flowplayer.com/>.
+
+COPYRIGHT
+    Copyright (C) 2009 by David Moreno.
+
+    This library is free software; you can redistribute it and/or modify it
+    under the same terms as Perl itself.
+
+    Flowplayer, also shipped with this distribution, is GPL:
+    <http://flowplayer.org/download/LICENSE_GPL.txt>.
+
