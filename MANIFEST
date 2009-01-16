@@ -1,8 +1,4 @@
 CHANGES
-lib
-lib/Apache2
-lib/Apache2/EmbedFLV
-lib/Apache2/EmbedFLV/FlowPlayer
 lib/Apache2/EmbedFLV/FlowPlayer/Controls.pm
 lib/Apache2/EmbedFLV/FlowPlayer.pm
 lib/Apache2/EmbedFLV/Template.pm
