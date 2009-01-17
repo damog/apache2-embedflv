@@ -1,0 +1,180 @@
+<?xml version="1.0" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>Apache2::EmbedFLV - Embed FLV videos into a templated web interface
+using Flowplayer.</title>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rev="made" href="mailto:damog@david-morenos-macbook-pro.local" />
+</head>
+
+<body style="background-color: white">
+
+
+<!-- INDEX BEGIN -->
+<div name="index">
+<p><a name="__index__"></a></p>
+
+<ul>
+
+	<li><a href="#name">NAME</a></li>
+	<li><a href="#synopsis">SYNOPSIS</a></li>
+	<li><a href="#advanced_poking">ADVANCED POKING</a></li>
+	<li><a href="#description">DESCRIPTION</a></li>
+	<li><a href="#see_it_in_action">SEE IT IN ACTION</a></li>
+	<li><a href="#behind_the_scenes">BEHIND THE SCENES</a></li>
+	<li><a href="#flowplayer_version">FLOWPLAYER VERSION</a></li>
+	<li><a href="#project">PROJECT</a></li>
+	<li><a href="#author">AUTHOR</a></li>
+	<li><a href="#thanks">THANKS</a></li>
+	<li><a href="#copyright">COPYRIGHT</a></li>
+</ul>
+
+<hr name="index" />
+</div>
+<!-- INDEX END -->
+
+<p>
+</p>
+<h1><a name="name">NAME</a></h1>
+<p>Apache2::EmbedFLV - Embed FLV videos into a templated web interface
+using Flowplayer.</p>
+<p>
+</p>
+<hr />
+<h1><a name="synopsis">SYNOPSIS</a></h1>
+<p>On your Apache configuration file:</p>
+<pre>
+ &lt;Files ~ &quot;\.flv$&quot;&gt;
+   SetHandler modperl
+   PerlResponseHandler Apache2::EmbedFLV
+ &lt;/Files&gt;</pre>
+<p>If you want to restrict only a certain directory to serve FLVs using
+<code>Apache2::EmbedFLV</code>, you can wrap the <code>Files</code> declaration on a
+<code>Directory</code> block. For more information, take a look at excellent
+Apache2's documentation.</p>
+<p>Flowplayer is shipped with this module. This is done to ease
+deployment. You only have to add this to the httpd config:</p>
+<pre>
+ &lt;Location /flowplayer.swf&gt;
+   SetHandler modperl
+   PerlResponseHandler Apache2::EmbedFLV::FlowPlayer
+ &lt;/Location&gt;
+ &lt;Location /flowplayer.controls.swf&gt;
+   SetHandler modperl
+   PerlResponseHandler Apache2::EmbedFLV::FlowPlayer::Controls
+ &lt;/Location&gt;</pre>
+<p>That's it. Just go to any FLV video within your web server. With that
+setup, <code>Apache2::EmbedFLV</code> will use a default template.</p>
+<p>
+</p>
+<hr />
+<h1><a name="advanced_poking">ADVANCED POKING</a></h1>
+<p>Take a look at the default template located at example/template.tt.
+That is not the real file used by this module but it's a verbatim copy.
+The file is placed there just as an example so you can make
+your own template without too much internal poking.</p>
+<p>Once you have your own template, just <code>PerlSetVar</code> it to the handler:</p>
+<pre>
+ &lt;Files &quot;\.flv$&quot;&gt;
+   SetHandler modperl
+   PerlSetVar template /path/to/my/template.tt
+   PerlResponseHandler Apache2::EmbedFLV
+ &lt;/Files&gt;</pre>
+<p>Flowplayer is shipped with this distribution. See FLOWPLAYER VERSION
+for versioning details. Within the module, Flowplayer is base64-encoded
+in <code>Apache2::EmbedFLV::FlowPlayer</code> and in <code>Apache2::EmbedFLV::FlowPlayer::Controls</code>.
+This allows great ease of deployment and installation on just minimal
+overhead increase. There would be a number of reasons why you wouldn't
+want this, so this module allows you to override that default behaviour.
+Just <code>PerlSetVar flowplayer</code>:</p>
+<pre>
+ &lt;Files &quot;\.flv$&quot;&gt;
+   SetHandler modperl
+   PerlSetVar template /path/to/my/template.tt
+   # you would have to have <a href="http://yourserver.com/somewhere/flowplayer.swf">http://yourserver.com/somewhere/flowplayer.swf</a>:
+   PerlSetVar flowplayer /somewhere/flowplayer.swf
+   # or...
+   PerlSetVar flowplayer <a href="http://my.other.server/rocks/flowplayer.swf">http://my.other.server/rocks/flowplayer.swf</a>
+   PerlResponseHandler Apache2::EmbedFLV
+&lt;/Files&gt;</pre>
+<p>I believe it's pretty obvious that the templating system used and
+required is <a href="/Template/Toolkit.html">the Template::Toolkit manpage</a>. Wherever you want to embed the video
+within, just call: <code>[% video %]</code>.</p>
+<p>
+</p>
+<hr />
+<h1><a name="description">DESCRIPTION</a></h1>
+<p><code>Apache2::EmbledFLV</code> has been already described on the previous section
+:-)</p>
+<p>However...</p>
+<p><code>Apache2::EmbedFLV</code> enables Apache to show FLV videos using Flowplayer. 
+This will ease any deployment of FLV video galleries you'd need to do
+since you could just put the FLVs on an Apache accessible location, and
+they will be presented on a proper way to your final user.</p>
+<p>
+</p>
+<hr />
+<h1><a name="see_it_in_action">SEE IT IN ACTION</a></h1>
+<p>You can see it in action here: <a href="http://axiombox.com/apache2-embedflv/video">http://axiombox.com/apache2-embedflv/video</a>.</p>
+<p>
+</p>
+<hr />
+<h1><a name="behind_the_scenes">BEHIND THE SCENES</a></h1>
+<p><code>Apache2::EmbedFLV</code> is a hack. The most prominent hack within the
+distribution is the embedded Flowplayer as already explained above. 
+You don't need to separately
+download and install it as it is already served using
+<code>Apache2::EmbedFLV::FlowPlayer</code>, with an up-to-date base64 encoded
+string. This is possible due to: a) ease installation and deployment
+using standard CPAN installation methods, and b) Flowplayer being a nice
+GPL product.</p>
+<p>
+</p>
+<hr />
+<h1><a name="flowplayer_version">FLOWPLAYER VERSION</a></h1>
+<p>Flowplayer 3.0.3 is the one shipped with <code>Apache2::EmbedFLV</code> 0.1.
+Refer to <a href="http://flowplayer.org">http://flowplayer.org</a> for details.</p>
+<p>
+</p>
+<hr />
+<h1><a name="project">PROJECT</a></h1>
+<p>You can always see the latest information on this project on:
+<a href="http://axiombox.com/apache2-embedflv">http://axiombox.com/apache2-embedflv</a>.</p>
+<p>Code is hosted at <a href="http://github.com/damog/apache2-embedflv">http://github.com/damog/apache2-embedflv</a>.</p>
+<p>
+</p>
+<hr />
+<h1><a name="author">AUTHOR</a></h1>
+<p>David Moreno &lt;<a href="mailto:david@axiombox.com">david@axiombox.com</a>&gt;, <a href="http://damog.net/">http://damog.net/</a>.
+Some other similar projects are announced on the Infinite Pig
+Theorem blog: <a href="http://log.damog.net">http://log.damog.net</a>.</p>
+<p>
+</p>
+<hr />
+<h1><a name="thanks">THANKS</a></h1>
+<ul>
+<li><strong><a name="bill_cromie_who_allowed_me_to_use_my_employer_s_resources_to_have_some_fun_with_this_little_project" class="item">Bill Cromie, who allowed me to use my employer's resources to
+have some fun with this little project.</a></strong>
+
+</li>
+<li><strong><a name="flowplayer_http_flowplayer_com" class="item">Flowplayer <a href="http://flowplayer.com/">http://flowplayer.com/</a>.</a></strong>
+
+</li>
+<li><strong><a name="raquel_hern_ndex_http_maggit_net_who_made_the_default_template" class="item">Raquel Hernándex, <a href="http://maggit.net">http://maggit.net</a>, who made the default template.</a></strong>
+
+</li>
+</ul>
+<p>
+</p>
+<hr />
+<h1><a name="copyright">COPYRIGHT</a></h1>
+<p>Copyright (C) 2009 by David Moreno.</p>
+<p>This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself.</p>
+<p>Flowplayer, also shipped with this distribution, is GPL:
+<a href="http://flowplayer.org/download/LICENSE_GPL.txt">http://flowplayer.org/download/LICENSE_GPL.txt</a>.</p>
+
+</body>
+
+</html>
