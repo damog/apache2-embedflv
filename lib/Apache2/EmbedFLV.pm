@@ -17,22 +17,17 @@ C<Apache2::EmbedFLV>, you can wrap the C<Files> declaration on a
 C<Directory> block. For more information, take a look at excellent
 Apache2's documentation.
 
-Flowplayer is shipped with this module. This is done to ease
-deployment. You only have to add this to the httpd config:
+By default, you have to have C</flowplayer.swf> and C</flowplayer.controls.swf>
+available on your webserver. Both SWFs are provided on the GPL
+distribution of Flowplayer. You can C<alias> them with something like:
 
- <Location /flowplayer.swf>
-   SetHandler modperl
-   PerlResponseHandler Apache2::EmbedFLV::FlowPlayer
- </Location>
- <Location /flowplayer.controls.swf>
-   SetHandler modperl
-   PerlResponseHandler Apache2::EmbedFLV::FlowPlayer::Controls
- </Location>
+ Alias /flowplayer.swf /home/web/flowplayer-3.0.3.swf
+ Alias /flowplayer.controls.swf /home/web/flowplayer.controls.swf
 
 That's it. Just go to any FLV video within your web server. With that
 setup, C<Apache2::EmbedFLV> will use a default template.
 
-=head1 ADVANCED POKING
+=head1 TEMPLATING
 
 Take a look at the default template located at example/template.tt.
 That is not the real file used by this module but it's a verbatim copy.
@@ -41,21 +36,16 @@ your own template without too much internal poking.
 
 Once you have your own template, just C<PerlSetVar> it to the handler:
 
- <Files "\.flv$">
+ <Files ~ "\.flv$">
    SetHandler modperl
    PerlSetVar template /path/to/my/template.tt
    PerlResponseHandler Apache2::EmbedFLV
  </Files>
 
-Flowplayer is shipped with this distribution. See FLOWPLAYER VERSION
-for versioning details. Within the module, Flowplayer is base64-encoded
-in C<Apache2::EmbedFLV::FlowPlayer> and in C<Apache2::EmbedFLV::FlowPlayer::Controls>.
-This allows great ease of deployment and installation on just minimal
-overhead increase. There would be a number of reasons why you wouldn't
-want this, so this module allows you to override that default behaviour.
-Just C<PerlSetVar flowplayer>:
+In order to specify a different path than C</flowplayer.swf> for Flowplayer,
+just C<PerlSetVar flowplayer> (remember to accompany the controls SWF):
 
- <Files "\.flv$">
+ <Files ~ "\.flv$">
    SetHandler modperl
    PerlSetVar template /path/to/my/template.tt
    # you would have to have http://yourserver.com/somewhere/flowplayer.swf:
@@ -83,23 +73,16 @@ they will be presented on a proper way to your final user.
 
 =head1 SEE IT IN ACTION
 
-You can see it in action here: L<http://axiombox.com/apache2-embedflv/video>.
+You can see it in action here: L<http://axiombox.com/apache2-embedflv/flv>.
 
-=head1 BEHIND THE SCENES
+=head1 FLOWPLAYER
 
-C<Apache2::EmbedFLV> is a hack. The most prominent hack within the
-distribution is the embedded Flowplayer as already explained above. 
-You don't need to separately
-download and install it as it is already served using
-C<Apache2::EmbedFLV::FlowPlayer>, with an up-to-date base64 encoded
-string. This is possible due to: a) ease installation and deployment
-using standard CPAN installation methods, and b) Flowplayer being a nice
-GPL product.
+Find the Flowplayer distribution on L<http://flowplayer.com>. It is a nice
+little GPL video player.
 
-=head1 FLOWPLAYER VERSION
+=head1 DOWNLOAD
 
-Flowplayer 3.0.3 is the one shipped with C<Apache2::EmbedFLV> 0.1.
-Refer to L<http://flowplayer.org> for details.
+Download it at CPAN: L<http://search.cpan.org/~damog>.
 
 =head1 PROJECT
 

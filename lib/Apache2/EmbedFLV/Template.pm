@@ -84,11 +84,11 @@ my $video = <<EOF;
 	<a  
 		href="%%% url %%%"
 		style="display:block;width:425px;height:300px;text-align:center;"
-		id="apache2-embedflv"> 
+		id="player"> 
 	</a> 
 
 	<script language="JavaScript"> 
-		flowplayer("apache2-embedflv", "%%% flowplayer %%%"); 
+		flowplayer("player", "%%% flowplayer %%%"); 
 	</script>
 EOF
 
