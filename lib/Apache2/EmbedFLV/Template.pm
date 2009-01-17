@@ -5,32 +5,91 @@ use warnings;
 
 use Template;
 
-my $template =<<EOF;
+my $default_template=<<EOF;
 <html>
 <head>
-<script type="text/javascript">
-[% js %]
-</script>
+</head>
+<body>
+<style media="screen" type="text/css">
+body {
+background:#262523 none repeat scroll 0 0;
+color:#DDDDCC;
+font-family:"Trebuchet MS",Helvetica,Arial,sans-serif;
+font-size:14px;
+font-size-adjust:none;
+font-stretch:normal;
+font-style:normal;
+font-variant:normal;
+font-weight:normal;
+line-height:1.5em;
+}
+/* Header */
+#header {
+margin: 1em auto;
+width: 40em;
+}
 
-</head><body>
+#header a, #header a:visited, #header a:active {
+color: #eef;
+text-decoration: none;
+}
 
+#header a:hover {
+color: #ccb;
+}
+#posts {
+	margin: 0 auto;
+	width: 42em; 
+}
+
+   .post {
+	background-color:#363B39;
+	border:1px solid #494949;
+     margin: 1.5em 0;
+     padding: 1em; 
+   }
+   
+
+h1 {
+       font-size: 3em;
+       font-weight: bold;
+       line-height: 1em;
+     }
+.video{
+	text-align:center;
+}
+</style>
+<div id="header">
 <h1>Apache2::EmbedFLV</h1>
+</div>
 
-	<div id="page">
-	<a  
-    href="[% uri %]?[% md5 %]"  
-    style="display:block;width:425px;height:300px;"  
-    id="player"> 
-</a> 
- 
-<script language="JavaScript"> 
-    flowplayer("player", "/flowplayer.swf"); 
-</script>	
-		
+	<div id="posts">
+	 <div class="post">
+		<div class="video">
+		[% video %]
+		</div>
+	 </div>
 	</div>
-	
+
+<p align="center">Apache2::EmbedFLV - <a href="http://axiombox.com/apache2-embedflv">http://axiombox.com/apache2-embedflv</a></p>
 	
 </body></html>
+EOF
+
+my $video = <<EOF;
+	<script type="text/javascript">
+		%%% js %%%
+	</script>
+
+	<a  
+		href="%%% url %%%"
+		style="display:block;width:425px;height:300px;text-align:center;"
+		id="apache2-embedflv"> 
+	</a> 
+
+	<script language="JavaScript"> 
+		flowplayer("apache2-embedflv", "%%% flowplayer %%%"); 
+	</script>
 EOF
 
 sub new {
@@ -42,15 +101,32 @@ sub process {
 	my($self, %opts) = @_;
 	my $opts = \%opts;
 
-	my $js = do {local $/;<DATA>};
-	
+	if($opts->{template} and -r $opts->{template}) {
+		open my $fh, "<", $opts->{template} or die $!;
+		$default_template = "";
+		while(<$fh>) {
+			$default_template .= $_;
+		}
+		close $fh;
+	}
+
+	my $flowplayer = "/flowplayer.swf";
+	$flowplayer = $opts->{flowplayer} if $opts->{flowplayer};
+
+  my $js = do {local $/;<DATA>};
+
+	my $url = $opts->{uri}."?".$opts->{md5};
+	$video =~ s/%%% url %%%/$url/;
+	$video =~ s/%%% js %%%/$js/;
+	$video =~ s/%%% flowplayer %%%/$flowplayer/;
+
 	my $tt = Template->new;
 	my $output;
-	$tt->process(\$template, { 
-		js => $js,
-		uri => $opts->{uri},
-		md5 => $opts->{md5}
+
+	$tt->process(\$default_template, {
+		video => $video,
 	}, \$output);
+	
 	return $output;
 
 }

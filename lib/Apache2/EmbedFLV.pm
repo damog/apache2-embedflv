@@ -1,7 +1,7 @@
 =head1 NAME
 
 Apache2::EmbedFLV - Embed FLV videos into a templated web interface
-using Flowplayer
+using Flowplayer.
 
 =head1 SYNOPSIS
 
@@ -9,61 +9,123 @@ On your Apache configuration file:
 
  <Files ~ "\.flv$">
    SetHandler modperl
-	 PerlResponseHandler Apache2::EmbedFLV
+   PerlResponseHandler Apache2::EmbedFLV
  </Files>
 
-This is needed in order to have Flowplayer work out of the box:
+If you want to restrict only a certain directory to serve FLVs using
+C<Apache2::EmbedFLV>, you can wrap the C<Files> declaration on a
+C<Directory> block. For more information, take a look at excellent
+Apache2's documentation.
+
+Flowplayer is shipped with this module. This is done to ease
+deployment. You only have to add this to the httpd config:
 
  <Location /flowplayer.swf>
    SetHandler modperl
-	 PerlResponseHandler Apache2::EmbedFLV::FlowPlayer
+   PerlResponseHandler Apache2::EmbedFLV::FlowPlayer
  </Location>
  <Location /flowplayer.controls.swf>
    SetHandler modperl
-	 PerlResponseHandler Apache2::EmbedFLV::FlowPlayer::Controls
+   PerlResponseHandler Apache2::EmbedFLV::FlowPlayer::Controls
  </Location>
 
-That's it. Just go to any FLV video within your web server.
+That's it. Just go to any FLV video within your web server. With that
+setup, C<Apache2::EmbedFLV> will use a default template.
+
+=head1 ADVANCED POKING
+
+Take a look at the default template located at example/template.tt.
+That is not the real file used by this module but it's a verbatim copy.
+The file is placed there just as an example so you can make
+your own template without too much internal poking.
+
+Once you have your own template, just C<PerlSetVar> it to the handler:
+
+ <Files "\.flv$">
+   SetHandler modperl
+   PerlSetVar template /path/to/my/template.tt
+   PerlResponseHandler Apache2::EmbedFLV
+ </Files>
+
+Flowplayer is shipped with this distribution. See FLOWPLAYER VERSION
+for versioning details. Within the module, Flowplayer is base64-encoded
+in C<Apache2::EmbedFLV::FlowPlayer> and in C<Apache2::EmbedFLV::FlowPlayer::Controls>.
+This allows great ease of deployment and installation on just minimal
+overhead increase. There would be a number of reasons why you wouldn't
+want this, so this module allows you to override that default behaviour.
+Just C<PerlSetVar flowplayer>:
+
+ <Files "\.flv$">
+   SetHandler modperl
+   PerlSetVar template /path/to/my/template.tt
+   # you would have to have http://yourserver.com/somewhere/flowplayer.swf:
+   PerlSetVar flowplayer /somewhere/flowplayer.swf
+   # or...
+   PerlSetVar flowplayer http://my.other.server/rocks/flowplayer.swf
+   PerlResponseHandler Apache2::EmbedFLV
+</Files>
+
+I believe it's pretty obvious that the templating system used and
+required is L<Template::Toolkit>. Wherever you want to embed the video
+within, just call: C<[% video %]>.
 
 =head1 DESCRIPTION
 
-C<Apache2::EmbedFLV> enables Apache to show FLV videos using Flowplayer
-and a (yet-to-be) customizable template. This will ease any deployment
-of FLV video galleries you'd need to do since you could just put the
-FLVs on an Apache accessible location, and they will be presented on a
-proper way to your final user.
+C<Apache2::EmbledFLV> has been already described on the previous section
+:-)
+
+However...
+
+C<Apache2::EmbedFLV> enables Apache to show FLV videos using Flowplayer. 
+This will ease any deployment of FLV video galleries you'd need to do
+since you could just put the FLVs on an Apache accessible location, and
+they will be presented on a proper way to your final user.
 
 =head1 SEE IT IN ACTION
 
-You can see it in action here: L<http://dev.axiombox.com/apache2-flowplayer>.
+You can see it in action here: L<http://axiombox.com/apache2-embedflv/video>.
 
 =head1 BEHIND THE SCENES
 
 C<Apache2::EmbedFLV> is a hack. The most prominent hack within the
-distribution is the embedded Flowplayer. You don't need to separately
+distribution is the embedded Flowplayer as already explained above. 
+You don't need to separately
 download and install it as it is already served using
 C<Apache2::EmbedFLV::FlowPlayer>, with an up-to-date base64 encoded
 string. This is possible due to: a) ease installation and deployment
 using standard CPAN installation methods, and b) Flowplayer being a nice
 GPL product.
 
-=head1 CUSTOMIZATION
+=head1 FLOWPLAYER VERSION
 
-As of 0.1 release, customization of the template is not possible, but
-it shouldn't take that long before this is possible. If you are brave
-though, you can edit lib/Apache/EmbedFLV/Template.pm directly.
+Flowplayer 3.0.3 is the one shipped with C<Apache2::EmbedFLV> 0.1.
+Refer to L<http://flowplayer.org> for details.
 
-=head1 PARTICIPATE
+=head1 PROJECT
+
+You can always see the latest information on this project on:
+L<http://axiombox.com/apache2-embedflv>.
 
 Code is hosted at L<http://github.com/damog/apache2-embedflv>.
 
 =head1 AUTHOR
 
-David Moreno <david@axiombox.com>.
+David Moreno <david@axiombox.com>, L<http://damog.net/>.
+Some other similar projects are announced on the Infinite Pig
+Theorem blog: L<http://log.damog.net>.
 
 =head1 THANKS
 
-Nabbr.com, L<http://nabbr.com/>, and Flowplayer L<http://flowplayer.com/>.
+=over
+
+=item * Bill Cromie, who allowed me to use my employer's resources to
+have some fun with this little project.
+
+=item * Flowplayer L<http://flowplayer.com/>.
+
+=item * Raquel Hernándex, L<http://maggit.net>, who made the default template.
+
+=back
 
 =head1 COPYRIGHT
 
@@ -84,6 +146,7 @@ our $VERSION = '0.1';
 use Apache2::Request;
 use Apache2::RequestRec ();
 use Apache2::RequestIO ();
+use Apache2::RequestUtil ();
 use Apache2::Util ();
 use Apache2::Const -compile => qw/OK :common DIR_MAGIC_TYPE/;
 use Apache2::EmbedFLV::Template;
@@ -124,9 +187,18 @@ sub handler {
 			my $md5 = md5_hex($r->filename);
 			$r->content_type("text/html");
 
-			# TODO: this should use user's template
-			my $t = Apache2::EmbedFLV::Template->new;
-			$r->print($t->process(uri => $r->uri, md5 => $md5));
+			my $template = $r->dir_config('template');
+			my $flowplayer = $r->dir_config("flowplayer");
+
+			my $t = Apache2::EmbedFLV::Template->new($template);
+			$r->print(
+				$t->process(
+					uri => $r->uri,
+					md5 => $md5,
+					flowplayer => $flowplayer,
+					template => $template
+				)
+			);
 
 			return Apache2::Const::OK;
 		}
