@@ -124,7 +124,7 @@ L<http://flowplayer.org/download/LICENSE_GPL.txt>.
 
 package Apache2::EmbedFLV;
 
-our $VERSION = '0.1';
+our $VERSION = '0.1.1';
 
 use Apache2::Request;
 use Apache2::RequestRec ();
